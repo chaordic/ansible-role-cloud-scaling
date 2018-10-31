@@ -1,0 +1,20 @@
+---
+
+- name: aws | ami | Lookup EC2 instance ID
+  ec2_remote_facts:
+    filters: "{{ item_scale.ami_instance_filter }}"
+  register: ret_ec2
+
+- debug: var=ret_ec2.instances[0].id
+  when: ret_ec2.instances |length > 0
+
+- name: aws | ami | create based on Instance ID
+  when: ret_ec2.instances[0].id is defined
+  ec2_ami:
+    instance_id: "{{ ret_ec2.instances[0].id }}"
+    no_reboot: "{{ item_scale.ami_no_reboot |d(cs_no_reboot) }}"
+    wait: "{{ item_scale.ami_no_reboot |d(cs_ami_wait) }}"
+    wait_timeout: "{{ item_scale.ami_no_reboot |d(cs_ami_wait_timeout) }}"
+    name: "{{ item_scale.name }}-{{ item_scale.version }}{{ item_scale.ami_name_suffix }}"
+    description: "Create by Ansible cloud-scale role."
+    tags: "{{ item_scale.tags }}"

@@ -1,0 +1,10 @@
+---
+
+- set_fact:
+    asg_cfg_local:
+      tags:
+        - "{{ item_scale.tags }}"
+        - Name: "{{ item_scale.asg_cfg.name }}"
+
+- name: Create ASGs
+  ec2_asg: "{{ asg_cfg_local |combine(item_scale.asg_cfg) |combine(item_scale.asg_cfg_default) }}"

@@ -1,0 +1,22 @@
+---
+
+- name: aws | lc | find AMI ID
+  ec2_ami_find:
+    region: "{{ item_scale.region |d(cs_region)}}"
+    name: "{{ item_scale.lc_ami_find_name }}"
+    sort: "{{ item_scale.lc_sort |d(cs_lc_sort) }}"
+    sort_order: "{{ item_scale.lc_sort_order |d(cs_lc_sort_order) }}"
+  register: ec2_lc
+
+- debug: var=ec2_lc.results[0].ami_id
+  when: ec2_lc.results |length > 0
+
+- set_fact:
+    lc_cfg_local:
+      image_id: "{{ ec2_lc.results[0].ami_id }}"
+
+- debug: msg="{{ lc_cfg_local |combine(item_scale.lc_cfg_default) |combine(item_scale.lc_cfg) }}"
+
+- name: aws | lc | create
+  ec2_lc: "{{ lc_cfg_local |combine(item_scale.lc_cfg_default) |combine(item_scale.lc_cfg) }}"
+  when: ec2_lc.results |length > 0

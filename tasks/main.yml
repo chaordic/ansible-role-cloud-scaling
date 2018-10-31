@@ -1,0 +1,6 @@
+---
+
+- include: "{{ item_scale.provider }}.yml"
+  with_items: "{{ cloud_scaling_groups }}"
+  loop_control:
+    loop_var: item_scale

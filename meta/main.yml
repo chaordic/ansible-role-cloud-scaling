@@ -1,0 +1,9 @@
+galaxy_info:
+  author: SRE Team
+  description: Ansible role to manage Scaling applications on Cloud Providers.
+  company: Linx Impulse
+  license: Apache-2.0
+  min_ansible_version: 2.5
+  galaxy_tags: []
+
+dependencies: []

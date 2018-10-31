@@ -1,0 +1,16 @@
+---
+
+- include: "aws-ami.yml"
+  when:
+    - item_scale.ami is defined
+    - item_scale.ami
+
+- include: "aws-lc.yml"
+  when:
+    - item_scale.lc is defined
+    - item_scale.lc
+
+- include: "aws-asg.yml"
+  when:
+    - item_scale.asg is defined
+    - item_scale.asg

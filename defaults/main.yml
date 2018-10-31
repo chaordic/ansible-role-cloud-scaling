@@ -1,0 +1,82 @@
+---
+
+# Globals
+dt: "{{ ansible_date_time }}"
+cs_version: "{{ dt.year + dt.month + dt.day + dt.hour + dt.minute + dt.second }}"
+
+# Global tags to apply on the resources
+cs_global_tags:
+  team: "myTeam"
+  env:  "prod"
+  "chaordic:role": "myCluster"
+  ami_version: "{{ cs_version }}"
+
+cs_region: us-east-1
+cs_no_reboot: yes
+cs_ami_wait: yes
+cs_ami_wait_timeout: 1200
+
+cs_lc_sort: name
+cs_lc_sort_order: ascending
+cs_lc_limit: 1
+
+# Global options for LC module
+cs_lc_default:
+  region: "{{ cs_region }}"
+  vpc_id: vpc-XXX
+  security_groups:
+    - my-sg-base-private
+    - my-sg-api-private
+  instance_monitoring: yes
+  instance_profile_name: instance-role-myCluster
+  assign_public_ip: no
+  ebs_optimized: yes
+  user_data: |
+    #config
+    name: My Custom Userdata
+
+# Global options for ASG
+cs_asg_default:
+  availability_zones:
+    - us-east-1c
+  health_check_period: 300
+  health_check_type: ELB
+  target_group_arns:
+    - arn:aws:elasticloadbalancing:us-east-1::targetgroup/tg-api/cceee
+  #notification_topic: "{{ asg_global.notification_topic }}"
+  #notification_types: "{{ asg_global.notification_types }}"
+  #suspend_processes: ?
+  # tags: "{{ cs_global_tags }}"
+  wait_for_instances: no
+  termination_policies:
+    - OldestLaunchConfiguration
+    - OldestInstance
+    - Default
+  vpc_zone_identifier:
+    - subnet-FFF
+
+# My Scaling definition (LC + ASGs)
+cloud_scaling_groups:
+  - name: api
+    provider: aws
+    version: "{{ cs_version }}"
+    tags: "{{ cs_global_tags }}"
+    ami: true
+    ami_instance_filter:
+      "tag:Name": "ami-api"
+    ami_name_suffix: ""
+    lc: true
+    lc_ami_find_name: "api-{{ cs_version }}"
+    lc_name_suffix: ""
+    lc_cfg_default: "{{ cs_lc_default }}"
+    lc_cfg:
+      name: "api-{{ cs_version }}-od-c4.4x"
+      instance_type: c4.4xlarge
+    asg: true
+    asg_cfg_default: "{{ cs_asg_default }}"
+    asg_cfg:
+      name: "api-od-c4.4x"
+      launch_config_name: "api-{{ cs_version }}-od-c4.4x"
+      desired_capacity: 1
+      min_size: 1
+      max_size: 2
