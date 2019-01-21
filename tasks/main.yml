@@ -1,6 +1,6 @@
 ---
 
-- include: "{{ item_scale.provider }}.yml"
-  with_items: "{{ cloud_scaling_groups }}"
+- include: "{{ item_scale.provider |d('aws') }}.yml"
+  with_items: "{{ cs_scaling_groups }}"
   loop_control:
     loop_var: item_scale

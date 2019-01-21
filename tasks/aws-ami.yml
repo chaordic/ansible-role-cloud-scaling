@@ -5,8 +5,11 @@
     filters: "{{ item_scale.ami_instance_filter }}"
   register: ret_ec2
 
-- debug: var=ret_ec2.instances[0].id
-  when: ret_ec2.instances |length > 0
+- name: aws | ami |
+  debug: var=ret_ec2.instances[0].id
+  when:
+    - ret_ec2.instances is defined
+    - ret_ec2.instances |length > 0
 
 - name: aws | ami | create based on Instance ID
   when: ret_ec2.instances[0].id is defined

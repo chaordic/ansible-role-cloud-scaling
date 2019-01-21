@@ -1,0 +1,61 @@
+---
+- name: "aws | asg | {{ item_scale.asg_name }} | scaling policy | Setup"
+  ec2_scaling_policy:
+    name: "{{ item.name }}"
+    asg_name: "{{ item_scale.asg_name }}"
+    state: present
+    adjustment_type: "{{ item.adjustment_type }}"
+    min_adjustment_step: "{{ item.min_adjustment_step }}"
+    scaling_adjustment: "{{ item.scaling_adjustment }}"
+    cooldown: "{{ item.cooldown }}"
+  with_items: "{{ item_scale.scaling_policies }}"
+  register: sp_result
+  tags: sp
+
+- debug: var=sp_result
+
+- set_fact:
+    metric_alarms_up:
+      - name: "{{ item.as_name }}-CPUUtilization-High"
+        actions_arn:
+          - "{{ item.arn }}"
+        comparison: ">="
+        threshold: "{{ item_scale.metrics_spec.cpu_high_threshold |d(60.0) }}"
+        minutes: "{{ item_scale.metrics_spec.cpu_high_minutes |d(3) }}"
+  when:
+    - item.name is defined
+    - item.name == "scale-up"
+  with_items: "{{ sp_result.results }}"
+
+- set_fact:
+    metric_alarms_down:
+      - name: "{{ item.as_name }}-CPUUtilization-Low"
+        actions_arn:
+          - "{{ item.arn }}"
+        comparison: "<="
+        threshold: "{{ item_scale.metrics_spec.cpu_low_threshold |d(30.0) }}"
+        minutes: "{{ item_scale.metrics_spec.cpu_low_minutes |d(10) }}"
+  when:
+    - item.name is defined
+    - item.name == "scale-down"
+  with_items: "{{ sp_result.results }}"
+
+- name: "aws | asg | {{ item_scale.asg_name }} | Update Alarms and link to Scaling Policies"
+  ec2_metric_alarm:
+    name: "{{ item.name }}"
+    state: present
+    metric: "CPUUtilization"
+    namespace: "AWS/EC2"
+    statistic: "Average"
+    comparison: "{{ item.comparison }}"
+    threshold: "{{ item.threshold }}"
+    period: 60
+    evaluation_periods: "{{ item.minutes }}"
+    unit: "Percent"
+    dimensions:
+      AutoScalingGroupName: "{{  item_scale.asg_name }} }}"
+    alarm_actions: "{{ item.actions_arn }}"
+  with_items: "{{ metric_alarms_up + metric_alarms_down }}"
+  when:
+    - metric_alarms_up is defined
+    - metric_alarms_down is defined

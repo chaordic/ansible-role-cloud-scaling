@@ -1,16 +1,18 @@
 ---
 
-- include: "aws-ami.yml"
+- name: AMI | setup
+  include: "aws-ami.yml"
   when:
-    - item_scale.ami is defined
-    - item_scale.ami
+    - item_scale.ami_name is defined
 
-- include: "aws-lc.yml"
+- name: LC | setup
+  include: "aws-lc.yml"
   when:
-    - item_scale.lc is defined
-    - item_scale.lc
+    - item_scale.lc_name is defined
+    - item_scale.lc_spec is defined
 
-- include: "aws-asg.yml"
+- name: ASG | setup
+  include: "aws-asg.yml"
   when:
-    - item_scale.asg is defined
-    - item_scale.asg
+    - item_scale.asg_name is defined
+    - item_scale.asg_spec is defined
