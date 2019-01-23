@@ -49,7 +49,7 @@
     statistic: "Average"
     comparison: "{{ item.comparison }}"
     threshold: "{{ item.threshold }}"
-    period: 60
+    period: "{{ item.period | d(60) }}"
     evaluation_periods: "{{ item.minutes }}"
     unit: "Percent"
     dimensions:

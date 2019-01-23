@@ -22,7 +22,7 @@ Role Variables
 `cs_lc_instance_type`: instance type to use to create Launch Configuration
 `cs_lc_spot_price`: When using spot, the Spot price
 `cs_lc_security_groups`: List of security groups
-`cs_asg_target_group_arms`: List of target group ARNs
+`cs_asg_target_group_arns`: List of target group ARNs
 `cs_asg_availability_zones`: List of availability zones to be used on ASG
 `cs_asg_vpc_zone_identifier`: List of subnets to be used on ASG
 `cs_asg_termination_policies`: List of termination policies used on ASG
@@ -60,7 +60,7 @@ Example Playbook
         - api
 
       ### Global CS ASG
-      cs_asg_target_group_arms:
+      cs_asg_target_group_arns:
         - arn:aws:elasticloadbalancing:us-east-1:000000000000:targetgroup/tg-api/abcdef0123456789
 
       cs_asg_availability_zones:
@@ -97,7 +97,7 @@ Example Playbook
             max_size: 5
             desired_capacity: 0
             health_check_type: "ELB"
-            target_group_arns: "{{ cs_asg_target_group_arms }}"
+            target_group_arns: "{{ cs_asg_target_group_arns }}"
             availability_zones: "{{ cs_asg_availability_zones }}"
             vpc_zone_identifier: "{{ cs_asg_vpc_zone_identifier }}"
             termination_policies: "{{ cs_asg_termination_policies }}"
