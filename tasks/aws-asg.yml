@@ -1,10 +1,16 @@
 ---
 
-- set_fact:
-    asg_cfg_local:
-      tags:
-        - "{{ item_scale.tags }}"
-        - Name: "{{ item_scale.asg_cfg.name }}"
+- name: aws | asg | setup Name option
+  set_fact:
+    asg_spec_local:
+      name: "{{ item_scale.asg_name }}"
+      launch_config_name: "{{ item_scale.lc_name }}"
 
-- name: Create ASGs
-  ec2_asg: "{{ asg_cfg_local |combine(item_scale.asg_cfg) |combine(item_scale.asg_cfg_default) }}"
+- name: aws | asg | Create
+  ec2_asg: "{{
+      asg_spec_local |combine(item_scale.asg_spec)
+    }}"
+
+- name: aws | asg | Setup Simple scaling policies
+  include: aws-asg-policy/simple.yml
+  when: item_scale.scaling_policies_type == 'simple'

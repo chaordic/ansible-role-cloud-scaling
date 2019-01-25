@@ -7,16 +7,41 @@
     sort: "{{ item_scale.lc_sort |d(cs_lc_sort) }}"
     sort_order: "{{ item_scale.lc_sort_order |d(cs_lc_sort_order) }}"
   register: ec2_lc
+  when: item_scale.lc_spec.ami_name is defined
 
-- debug: var=ec2_lc.results[0].ami_id
-  when: ec2_lc.results |length > 0
+- name: aws | lc | debug AMI_ID
+  debug: var=ec2_lc.results[0].ami_id
+  when:
+    - ec2_lc.results is defined
+    - ec2_lc.results |length > 0
 
-- set_fact:
+- name: aws | lc | update ami_id with discovered ID
+  set_fact:
     lc_cfg_local:
       image_id: "{{ ec2_lc.results[0].ami_id }}"
+      name: "{{ item_scale.lc_name }}"
+  when:
+    - item_scale.lc_spec.ami_name is defined
 
-- debug: msg="{{ lc_cfg_local |combine(item_scale.lc_cfg_default) |combine(item_scale.lc_cfg) }}"
+- name: aws | lc | update ami_id based on SPEC
+  set_fact:
+    lc_spec_local:
+      image_id: "{{ item_scale.lc_spec.image_id }}"
+      name: "{{ item_scale.lc_name }}"
+  when: item_scale.lc_spec.image_id is defined
+
+- name: aws | lc | create final SPEC
+  set_fact:
+    lc_spec: "{{
+      lc_spec_local
+      |combine(item_scale.lc_spec_default |d({}) )
+      |combine(item_scale.lc_spec |d({}) )
+    }}"
+
+- name: aws | lc | show SPEC
+  debug: var=lc_spec
 
 - name: aws | lc | create
-  ec2_lc: "{{ lc_cfg_local |combine(item_scale.lc_cfg_default) |combine(item_scale.lc_cfg) }}"
-  when: ec2_lc.results |length > 0
+  ec2_lc: "{{ lc_spec }}"
+  when:
+    - lc_spec is defined
