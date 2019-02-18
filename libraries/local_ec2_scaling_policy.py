@@ -87,6 +87,11 @@ def create_scaling_policy(connection, module):
     scaling_adjustment = module.params.get('scaling_adjustment')
     min_adjustment_step = module.params.get('min_adjustment_step')
     cooldown = module.params.get('cooldown')
+    policy_type = module.params.get('policy_type')
+    metric_aggr_type = module.params.get('metric_aggregation_type')
+    step_adjustments = module.params.get('step_adjustments')
+    estimated_warmup = module.params.get('estimated_warmup')
+
 
     scalingPolicies = connection.get_all_policies(as_group=asg_name, policy_names=[sp_name])
 
@@ -130,8 +135,10 @@ def create_scaling_policy(connection, module):
             if changed:
                 connection.create_scaling_policy(policy)
                 policy = connection.get_all_policies(as_group=asg_name, policy_names=[sp_name])[0]
-            module.exit_json(changed=changed, name=policy.name, arn=policy.policy_arn, as_name=policy.as_name, scaling_adjustment=policy.scaling_adjustment,
-                             cooldown=policy.cooldown, adjustment_type=policy.adjustment_type, min_adjustment_step=policy.min_adjustment_step)
+            module.exit_json(changed=changed, name=policy.name, arn=policy.policy_arn,
+                             as_name=policy.as_name, scaling_adjustment=policy.scaling_adjustment,
+                             cooldown=policy.cooldown, adjustment_type=policy.adjustment_type,
+                             min_adjustment_step=policy.min_adjustment_step)
         except BotoServerError as e:
             module.fail_json(msg=str(e))
 
@@ -157,11 +164,15 @@ def main():
     argument_spec.update(
         dict(
             name=dict(required=True, type='str'),
+            policy_type=dict(type='str', choices=['SimpleScaling', 'StepScaling', 'TargetTrackingScaling']),
             adjustment_type=dict(type='str', choices=['ChangeInCapacity', 'ExactCapacity', 'PercentChangeInCapacity']),
+            metric_aggregation_type=dict(type='str', choices=['Minimum', 'Maximum', 'Average']),
             asg_name=dict(required=True, type='str'),
+            step_adjustments=dict(type='str'),
             scaling_adjustment=dict(type='int'),
             min_adjustment_step=dict(type='int'),
             cooldown=dict(type='int'),
+            estimated_warmup=dict(type='int'),
             state=dict(default='present', choices=['present', 'absent']),
         )
     )
