@@ -12,5 +12,5 @@
     }}"
 
 - name: aws | asg | Setup Simple scaling policies
-  include: aws-asg-policy/simple.yml
-  when: item_scale.scaling_policies_type == 'simple'
+  include: "aws-asg-policy/{{ item_scale.scaling_policies_type }}.yml"
+  when: item_scale.scaling_policies_type is defined

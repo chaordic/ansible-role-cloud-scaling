@@ -1,0 +1,13 @@
+---
+- name: Setup policies
+  include: "./step-config.yml"
+  with_items: "{{ item_scale.scaling_policies_spec }}"
+  loop_control:
+    loop_var: item_step
+
+
+# - name: "aws | asg | {{ item_scale.asg_name }} | scaling policy | Setup"
+#   local_ec2_scaling_policy: "{{ item_scale.scaling_policies_spec }}"
+#   register: sp_result
+#   tags: sp
+
