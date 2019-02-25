@@ -7,10 +7,9 @@
   with_items: "{{ item_step.step_adjustments }}"
 
 - debug: var=l_step_adjustments
-
 - debug: var=l_step_adjustments|to_json
 
-- name: create steps
+- name: "aws | asg | {{ item_scale.asg_name }} | step | create"
   shell: |
     aws autoscaling put-scaling-policy \
       --auto-scaling-group-name {{ item_scale.asg_name }} \
@@ -25,8 +24,6 @@
 - set_fact:
     sp_out: "{{ sp_result.stdout|from_json }}"
 
-- debug: var=sp_out
-
 - set_fact:
     sp_arn: "{{ sp_out.PolicyARN }}"
 
@@ -34,16 +31,16 @@
 
 - name: "aws | asg | {{ item_scale.asg_name }} | Update Alarms and link to Scaling Policies"
   ec2_metric_alarm:
-    name: "{{ item_scale.asg_name }}-{{ item_step.metric.suffix }}"
+    name: "{{ item_scale.asg_name }}-{{ item_step.alarm_spec.name }}"
     state: present
-    metric: "{{ item_step.metric.name }}"
+    metric: "{{ item_step.alarm_spec.metric }}"
     namespace: "AWS/EC2"
-    statistic: "{{ item_step.metric.statistic }}"
-    comparison: "{{ item_step.metric.comparison }}"
-    threshold: "{{ item_step.metric.threshold }}"
-    period: "{{ item_step.period | d(60) }}"
-    evaluation_periods: "{{ item_step.metric.minutes }}"
-    unit: "Percent"
+    statistic: "{{ item_step.alarm_spec.statistic }}"
+    comparison: "{{ item_step.alarm_spec.comparison }}"
+    threshold: "{{ item_step.alarm_spec.threshold }}"
+    period: "{{ item_step.alarm_spec.period | d(60) }}"
+    evaluation_periods: "{{ item_step.alarm_spec.minutes }}"
+    unit: "{{ item_step.alarm_spec.unit |d('Percent') }}"
     dimensions:
       AutoScalingGroupName: "{{ item_scale.asg_name }}"
     alarm_actions: "{{ sp_out.PolicyARN }}"
