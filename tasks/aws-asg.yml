@@ -20,7 +20,9 @@
   set_fact:
     asg_spec_des:
       desired_capacity: "{{ item_scale.asg_spec.min_size }}"
-  when: ret_asg.results|length == 0
+  when:
+    - ret_asg.results is defined
+    - ret_asg.results|length == 0
 
 - name: aws | asg | Create
   ec2_asg: "{{
