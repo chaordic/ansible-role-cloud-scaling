@@ -1,16 +1,36 @@
 ---
 
+- debug: var=item_scale.asg_name
+
+- name: aws | asg | check exists
+  ec2_asg_facts:
+    name: "{{ item_scale.asg_name }}"
+  register: ret_asg
+
+- debug: var=ret_asg
+
 - name: aws | asg | setup Name option
   set_fact:
     asg_spec_local:
       name: "{{ item_scale.asg_name }}"
       launch_config_name: "{{ item_scale.lc_name }}"
+    asg_spec_des: {}
+
+- name: aws | asg | set desired_capacity
+  set_fact:
+    asg_spec_des:
+      desired_capacity: "{{ item_scale.asg_spec.min_size }}"
+  when:
+    - ret_asg.results is defined
+    - ret_asg.results|length == 0
 
 - name: aws | asg | Create
   ec2_asg: "{{
-      asg_spec_local |combine(item_scale.asg_spec)
+      asg_spec_local
+      |combine(asg_spec_des)
+      |combine(item_scale.asg_spec)
     }}"
 
 - name: aws | asg | Setup Simple scaling policies
-  include: aws-asg-policy/simple.yml
-  when: item_scale.scaling_policies_type == 'simple'
+  include: "aws-asg-policy/{{ item_scale.scaling_policies_type }}.yml"
+  when: item_scale.scaling_policies_type is defined

@@ -1,0 +1,48 @@
+---
+- set_fact:
+    l_step_adjustments: []
+
+- name: "aws | asg | {{ item_scale.asg_name }} | step | set rules"
+  set_fact:
+    l_step_adjustments: "{{ l_step_adjustments + [item] }}"
+  with_items: "{{ item_step.step_adjustments }}"
+
+- debug: var=l_step_adjustments
+- debug: var=l_step_adjustments|to_json
+
+- name: "aws | asg | {{ item_scale.asg_name }} | step | create"
+  shell: |
+    aws autoscaling put-scaling-policy \
+      --auto-scaling-group-name {{ item_scale.asg_name }} \
+      --policy-name {{ item_step.name }} \
+      --policy-type {{ item_step.policy_type }} \
+      --metric-aggregation-type {{ item_step.metric_aggregation_type }} \
+      --adjustment-type {{ item_step.adjustment_type }} \
+      --estimated-instance-warmup {{ item_step.estimated_warmup }} \
+      --step-adjustments '{{ l_step_adjustments|to_json }}'
+  register: sp_result
+
+- name: "aws | asg | {{ item_scale.asg_name }} | step | parse creation"
+  set_fact:
+    sp_out: "{{ sp_result.stdout|from_json }}"
+  when: sp_result.stdout is defined
+
+- debug: var=sp_out
+  when: sp_out is defined
+
+- name: "aws | asg | {{ item_scale.asg_name }} | Update Alarms and link to Scaling Policies"
+  ec2_metric_alarm:
+    name: "{{ item_scale.asg_name }}-{{ item_step.alarm_spec.name }}"
+    state: present
+    metric: "{{ item_step.alarm_spec.metric }}"
+    namespace: "AWS/EC2"
+    statistic: "{{ item_step.alarm_spec.statistic }}"
+    comparison: "{{ item_step.alarm_spec.comparison }}"
+    threshold: "{{ item_step.alarm_spec.threshold }}"
+    period: "{{ item_step.alarm_spec.period | d(60) }}"
+    evaluation_periods: "{{ item_step.alarm_spec.minutes }}"
+    unit: "{{ item_step.alarm_spec.unit |d('Percent') }}"
+    dimensions:
+      AutoScalingGroupName: "{{ item_scale.asg_name }}"
+    alarm_actions: "{{ sp_out.PolicyARN }}"
+  when: sp_out is defined

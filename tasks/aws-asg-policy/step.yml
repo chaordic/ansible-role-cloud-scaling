@@ -1,0 +1,6 @@
+---
+- name: Setup policies
+  include: "./step-config.yml"
+  with_items: "{{ item_scale.scaling_policies_spec }}"
+  loop_control:
+    loop_var: item_step
