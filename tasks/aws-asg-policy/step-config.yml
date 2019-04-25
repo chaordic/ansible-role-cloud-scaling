@@ -42,6 +42,7 @@
     period: "{{ item_step.alarm_spec.period | d(60) }}"
     evaluation_periods: "{{ item_step.alarm_spec.minutes }}"
     unit: "{{ item_step.alarm_spec.unit |d('Percent') }}"
+    region: "{{ item_scale.region |d(cs_region)}}"
     dimensions:
       AutoScalingGroupName: "{{ item_scale.asg_name }}"
     alarm_actions: "{{ sp_out.PolicyARN }}"
