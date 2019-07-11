@@ -7,6 +7,11 @@
     l_step_adjustments: "{{ l_step_adjustments + [item] }}"
   with_items: "{{ item_step.step_adjustments }}"
 
+- name: "aws | asg | {{ item_scale.asg_name }} | set default metric dimensions"
+  set_fact:
+    default_metric_dimensions:
+      AutoScalingGroupName: "{{ item_scale.asg_name }}"
+
 - debug: var=l_step_adjustments
 - debug: var=l_step_adjustments|to_json
 
@@ -35,7 +40,7 @@
     name: "{{ item_scale.asg_name }}-{{ item_step.alarm_spec.name }}"
     state: present
     metric: "{{ item_step.alarm_spec.metric }}"
-    namespace: "AWS/EC2"
+    namespace: "{{ item_step.alarm_spec.namespace | d('AWS/EC2') }}"
     statistic: "{{ item_step.alarm_spec.statistic }}"
     comparison: "{{ item_step.alarm_spec.comparison }}"
     threshold: "{{ item_step.alarm_spec.threshold }}"
@@ -43,7 +48,6 @@
     evaluation_periods: "{{ item_step.alarm_spec.minutes }}"
     unit: "{{ item_step.alarm_spec.unit |d('Percent') }}"
     region: "{{ item_scale.region |d(cs_region)}}"
-    dimensions:
-      AutoScalingGroupName: "{{ item_scale.asg_name }}"
+    dimensions: "{{ item_step.alarm_spec.dimensions | d(default_metric_dimensions) }}"
     alarm_actions: "{{ sp_out.PolicyARN }}"
   when: sp_out is defined
