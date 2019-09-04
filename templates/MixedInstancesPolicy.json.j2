@@ -17,6 +17,10 @@
             ]
         },
 	"InstancesDistribution": {
+{% if item_scale.asg_mixed_instances_policy.spot_allocation_strategy == 'lowest-price' %}
+		"SpotInstancePools": {{ item_scale.asg_mixed_instances_policy.spot_instance_pools }},
+		"SpotMaxPrice": "{{ item_scale.asg_mixed_instances_policy.spot_max_price | d('default') }}",
+{% endif %}
 		"OnDemandBaseCapacity": {{ item_scale.asg_mixed_instances_policy.on_demand_base_capacity }},
 		"OnDemandPercentageAboveBaseCapacity": {{ item_scale.asg_mixed_instances_policy.on_demand_percentage_above_base_capacity }},
 		"SpotAllocationStrategy": "{{ item_scale.asg_mixed_instances_policy.spot_allocation_strategy }}"
