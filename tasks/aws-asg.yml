@@ -1,7 +1,5 @@
 ---
-
 - debug: var=item_scale.asg_name
-
 - name: aws | asg | check exists
   ec2_asg_facts:
     name: "{{ item_scale.asg_name }}"
@@ -9,12 +7,22 @@
 
 - debug: var=ret_asg
 
-- name: aws | asg | setup Name option
+- name: aws | asg | setup Name option when is launch configuration
   set_fact:
     asg_spec_local:
       name: "{{ item_scale.asg_name }}"
       launch_config_name: "{{ item_scale.lc_name }}"
     asg_spec_des: {}
+  when: item_scale.lc_name is defined
+
+- name: aws | asg | setup Name option when is launch template
+  set_fact:
+    asg_spec_local:
+      name: "{{ item_scale.asg_name }}"
+      launch_template:
+        launch_template_name: "{{ item_scale.lt_name }}"
+    asg_spec_des: {}
+  when: item_scale.lt_name is defined
 
 - name: aws | asg | set desired_capacity
   set_fact:
@@ -33,12 +41,35 @@
     - ret_asg.results|length > 0
     - ret_asg.results[0].desired_capacity < item_scale.asg_spec.min_size
 
-- name: aws | asg | Create
+- name: aws | asg | create
   ec2_asg: "{{
       asg_spec_local
       |combine(asg_spec_des)
       |combine(item_scale.asg_spec)
     }}"
+
+- block:
+  - name: aws | asg | create MixedInstancePolicy
+    template:
+      src: MixedInstancesPolicy.json.j2
+      dest: "/tmp/aws-asg-{{ item_scale.asg_name }}"
+      mode: '0644'
+    changed_when: False
+
+  - name: aws | asg | update MixedInstancePolicy
+    shell: |
+      aws autoscaling update-auto-scaling-group \
+      --auto-scaling-group-name {{ item_scale.asg_name }} \
+      --mixed-instances-policy file:///tmp/aws-asg-{{ item_scale.asg_name }}
+  when:
+    - item_scale.lt_name is defined
+    - item_scale.asg_mixed_instances_policy is defined
+  always:
+  - name: aws | asg | clean json file
+    file:
+      state: absent
+      path: "/tmp/aws-asg-{{ item_scale.asg_name }}"
+    changed_when: False
 
 - name: aws | asg | Setup Simple scaling policies
   include: "aws-asg-policy/{{ item_scale.scaling_policies_type }}.yml"
