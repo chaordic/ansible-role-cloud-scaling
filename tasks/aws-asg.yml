@@ -1,5 +1,6 @@
 ---
 - debug: var=item_scale.asg_name
+
 - name: aws | asg | check exists
   ec2_asg_facts:
     name: "{{ item_scale.asg_name }}"
