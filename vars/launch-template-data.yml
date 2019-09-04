@@ -1,0 +1,14 @@
+---
+launch_template_data:
+  ImageId: "{{ item_scale.lt_spec.image_id }}"
+  EbsOptimized: "{{ item_scale.lt_spec.ebs_optimized  | d('false') | bool }}"
+  Monitoring:
+    Enabled: "{{ item_scale.lt_spec.instance_monitoring | d('false') | bool }}"
+  IamInstanceProfile:
+    Name: "{{ item_scale.lt_spec.instance_profile_name }}"
+  NetworkInterfaces:
+    - DeviceIndex: 0
+      AssociatePublicIpAddress: "{{ item_scale.lt_spec.associate_public_ip_address | d('false') | bool }}"
+      DeleteOnTermination: "{{ item_scale.lt_spec.delete_on_termination | d('false') | bool }}"
+      Groups: "{{ item_scale.lt_spec.security_groups }}"
+  InstanceType: "{{ item_scale.asg_mixed_instances_policy.instance_types.0 }}"

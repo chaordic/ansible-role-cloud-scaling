@@ -11,6 +11,12 @@
     - item_scale.lc_name is defined
     - item_scale.lc_spec is defined
 
+- name: LT | setup
+  include: "aws-lt.yml"
+  when:
+    - item_scale.lt_name is defined
+    - item_scale.lt_spec is defined
+
 - name: ASG | setup
   include: "aws-asg.yml"
   when:

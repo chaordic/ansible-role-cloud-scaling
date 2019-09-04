@@ -1,5 +1,4 @@
 ---
-
 - include: "{{ item_scale.provider |d('aws') }}.yml"
   with_items: "{{ cs_scaling_groups }}"
   loop_control:
