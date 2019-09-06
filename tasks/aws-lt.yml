@@ -23,7 +23,7 @@
 
 - name: aws | lt | check exists
   shell: |
-    aws ec2 describe-launch-templates --launch-template-name "{{ item_scale.lt_name }}"
+    aws ec2 describe-launch-templates --launch-template-name {{ item_scale.lt_name }}
   register: desc_result
   changed_when: False
   failed_when:
