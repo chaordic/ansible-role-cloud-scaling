@@ -12,7 +12,8 @@ Limitations:
 Requirements
 ------------
 
-Ansible 2.5+
+- Ansible 2.5+
+- awscli 1.16+
 
 Role Variables
 --------------
@@ -255,6 +256,88 @@ Example Playbook
                   - "ScalingAdjustment": -2
                     "MetricIntervalUpperBound": -10
 
+
+* Var file `vars/aws-asg/api.yml` with **mixed instances policy**
+
+      ---# vars/aws-asg/api.yml
+      ### Global
+      cs_tags:
+        team: myTeam
+        env: prod
+        role: api
+
+      ### Global CS AMI
+      cs_ami_create: false
+
+      # Global CS LT
+      cs_lt_security_groups:
+      - sg-0f485a3637b7681f5
+      - sg-1z521x3670b3301f2
+
+      ### Global CS ASG
+      cs_asg_target_group_arns:
+        - arn:aws:elasticloadbalancing:us-east-1:000000000000:targetgroup/tg-api/abcdef0123456789
+
+      cs_asg_instance_types:
+        - c5.large
+        - c5d.large
+        - m5.large
+        - m5d.large
+
+      cs_asg_availability_zones:
+        - us-east-1d
+
+      cs_asg_vpc_zone_identifier:
+        - subnet-abcdef0123456789
+
+      cs_asg_termination_policies:
+        - OldestLaunchTemplate
+        - ClosestToNextInstanceHour
+        - OldestInstance
+        - AllocationStrategy
+        - Default
+
+      cs_asg_notification_topic: arn:aws:sns:us-east-1:000000000000:MyTeam
+      cs_asg_notification_types:
+        - autoscaling:EC2_INSTANCE_LAUNCH_ERROR
+        - autoscaling:EC2_INSTANCE_TERMINATE_ERROR
+
+      ### Scaling Groups
+      cs_scaling_groups:
+        - asg_name: api-devfleet
+          lt_name: "api-fleet-201901211852"
+          lt_spec:
+            security_groups: "{{ cs_lt_security_groups }}"
+            instance_monitoring: true
+            instance_profile_name: instance-role-api
+            ebs_optimized: yes
+            image_id: "{{ latest_ami  }}"
+
+          asg_mixed_instances_policy:
+            on_demand_base_capacity: 1
+            on_demand_percentage_above_base_capacity: 1
+            spot_allocation_strategy: capacity-optimized
+            instance_types: "{{ cs_asg_instance_types }}"
+
+          asg_spec:
+            min_size: 0
+            max_size: 5
+            desired_capacity: 0
+            health_check_type: "ELB"
+            target_group_arns: "{{ cs_asg_target_group_arns }}"
+            availability_zones: "{{ cs_asg_availability_zones }}"
+            vpc_zone_identifier: "{{ cs_asg_vpc_zone_identifier }}"
+            termination_policies: "{{ cs_asg_termination_policies }}"
+            notification_topic: "{{ cs_asg_notification_topic }}"
+            notification_types: "{{ cs_asg_notification_types }}"
+            tags:
+              - Name: api-devspot
+                propagate_at_launch: yes
+              - team: "{{ cs_tags.team }}"
+                propagate_at_launch: yes
+              - env: "dev"
+                propagate_at_launch: yes
+
 * Playbook `aws-asg-api.yml`
 
       ---# aws-asg-api.yml
@@ -284,7 +367,7 @@ Contributing
 We have some TODOs, like:
 
 * Make role idempotent on modules `ec2_asg` and `ec2_metric_alarm`
-* Make support of step scaling policies (limition of the module)
+* Make support of step scaling policies (limitation of the module)
 * Keep simple policies more flexible on SPEC
 * Make CI tests
 
