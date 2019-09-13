@@ -270,7 +270,7 @@ Example Playbook
       cs_ami_create: false
 
       # Global CS LT
-      cs_lt_security_groups:
+      cs_lt_security_group_ids:
       - sg-0f485a3637b7681f5
       - sg-1z521x3670b3301f2
 
@@ -307,7 +307,7 @@ Example Playbook
         - asg_name: api-devfleet
           lt_name: "api-fleet-201901211852"
           lt_spec:
-            security_groups: "{{ cs_lt_security_groups }}"
+            security_group_ids: "{{ cs_lt_security_group_ids }}"
             instance_monitoring: true
             instance_profile_name: instance-role-api
             ebs_optimized: yes
