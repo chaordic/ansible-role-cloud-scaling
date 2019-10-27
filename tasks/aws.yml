@@ -4,21 +4,25 @@
   include: "aws-ami.yml"
   when:
     - item_scale.ami_name is defined
+  tags: aws-ami
 
 - name: LC | setup
   include: "aws-lc.yml"
   when:
     - item_scale.lc_name is defined
     - item_scale.lc_spec is defined
+  tags: aws-lc
 
 - name: LT | setup
   include: "aws-lt.yml"
   when:
     - item_scale.lt_name is defined
     - item_scale.lt_spec is defined
+  tags: aws-lt
 
 - name: ASG | setup
   include: "aws-asg.yml"
   when:
     - item_scale.asg_name is defined
     - item_scale.asg_spec is defined
+  tags: aws-asg
