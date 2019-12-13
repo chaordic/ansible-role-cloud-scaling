@@ -4,6 +4,8 @@ launch_template_data:
   EbsOptimized: "{{ item_scale.lt_spec.ebs_optimized  | d('false') | bool }}"
   Monitoring:
     Enabled: "{{ item_scale.lt_spec.instance_monitoring | d('false') | bool }}"
+  UserData: "{{ item_scale.lt_spec.user_data | d(omit) }}"
+  KeyName: "{{ item_scale.lt_spec.key_name | d(omit) }}"
   IamInstanceProfile:
     Name: "{{ item_scale.lt_spec.instance_profile_name }}"
   NetworkInterfaces:
