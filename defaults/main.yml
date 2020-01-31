@@ -9,6 +9,7 @@ cs_global_tags:
   team: "myTeam"
   env:  "prod"
   "chaordic:role": "myCluster"
+  "chaordic:product": "myProduct"
   ami_version: "{{ cs_version }}"
 
 cs_region: us-east-1
