@@ -8,7 +8,8 @@ cs_version: "{{ dt.year + dt.month + dt.day + dt.hour + dt.minute + dt.second }}
 cs_global_tags:
   team: "myTeam"
   env:  "prod"
-  "chaordic:role": "myCluster"
+  role: "myCluster"
+  product: "myProduct"
   ami_version: "{{ cs_version }}"
 
 cs_region: us-east-1
