@@ -28,6 +28,7 @@
   changed_when: False
   failed_when:
     - desc_result.rc != 0
+    - desc_result.rc != 254
     - desc_result.rc != 255
 
 - name: aws | lt | create
@@ -40,4 +41,4 @@
   register: lt_result
   when:
     - lt_spec is defined
-    - desc_result.rc == 255
+    - desc_result.rc == 254 or desc_result.rc == 255
