@@ -1,7 +1,7 @@
 ---
 
 - name: aws | ami | Lookup EC2 instance ID
-  ec2_remote_facts:
+  ec2_instance_facts:
     filters: "{{ item_scale.ami_instance_filter }}"
   register: ret_ec2
 
