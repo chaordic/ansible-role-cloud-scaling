@@ -73,5 +73,5 @@
     changed_when: False
 
 - name: aws | asg | Setup Simple scaling policies
-  include: "aws-asg-policy/{{ item_scale.scaling_policies_type }}.yml"
+  include_tasks: "aws-asg-policy/{{ item_scale.scaling_policies_type }}.yml"
   when: item_scale.scaling_policies_type is defined
