@@ -279,10 +279,14 @@ Example Playbook
         - arn:aws:elasticloadbalancing:us-east-1:000000000000:targetgroup/tg-api/abcdef0123456789
 
       cs_asg_instance_types:
-        - c5.large
-        - c5d.large
-        - m5.large
-        - m5d.large
+        - type: c5.large
+          weight: 2
+        - type: c5d.large
+          weight: 1
+        - type: m5.large
+          weight: 2
+        - type: m5d.large
+          weight: 1
 
       cs_asg_availability_zones:
         - us-east-1d
