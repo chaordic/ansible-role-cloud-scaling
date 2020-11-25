@@ -40,7 +40,7 @@
   when:
     - ret_asg.results is defined
     - ret_asg.results|length > 0
-    - ret_asg.results[0].desired_capacity < item_scale.asg_spec.min_size
+    - ret_asg.results[0].desired_capacity < item_scale.asg_spec.min_size|int
 
 - name: aws | asg | create
   ec2_asg: "{{
